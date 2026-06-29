@@ -144,6 +144,10 @@ textarea.input::placeholder{color:var(--text-light)}
   color:var(--text);transition:border-color 0.2s
 }
 .signature-input input:focus{border-color:var(--primary)}
+.identity-input{margin:12px 0 4px}
+.identity-input.visible{display:block}
+.identity-input input{width:100%;padding:8px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);outline:none;background:var(--bg);color:var(--text);transition:border-color 0.2s}
+.identity-input input:focus{border-color:var(--primary)}
 /* button */
 .btn{
   display:block;width:100%;padding:14px 24px;
@@ -302,11 +306,11 @@ textarea.input::placeholder{color:var(--text-light)}
 
   <!-- Input Card -->
   <div class="card" id="inputCard">
-    <div class="card-title">自画像</div>
-    <textarea class="input" id="sentenceInput" rows="2" placeholder="大学四年，像一碗加多了醋的麻辣烫……" maxlength="80"></textarea>
+    <div class="card-title">你的句子</div>
+    <textarea class="input" id="sentenceInput" rows="2" placeholder="写一句你这四年里最想记住的话" maxlength="80"></textarea>
     <div style="text-align:right;font-size:12px;color:var(--text-light);margin-top:4px"><span id="charCount">0</span>/80</div>
 
-    <div class="card-title" style="margin-top:16px">隐藏身份</div>
+    <div class="card-title" style="margin-top:16px">给自己一个标签（选填）</div>
     <div class="identity-grid" id="identityGrid">
       <div class="identity-chip" data-value="早八失踪人口">早八失踪人口</div>
       <div class="identity-chip" data-value="食堂活地图">食堂活地图</div>
@@ -314,11 +318,15 @@ textarea.input::placeholder{color:var(--text-light)}
       <div class="identity-chip" data-value="图书馆幽灵">图书馆幽灵</div>
       <div class="identity-chip" data-value="社团顶梁柱">社团顶梁柱</div>
       <div class="identity-chip" data-value="实验室钉子户">实验室钉子户</div>
+      <div class="identity-chip" data-value="__custom__">自定义</div>
+    </div>
+    <div class="identity-input" id="customIdentityInput" >
+      <input type="text" id="customIdentity" placeholder="输入你的标签" maxlength="10" >
     </div>
 
     <div class="check-row" id="shareCheck">
       <input type="checkbox" id="shareToggle">
-      <label class="check-label" for="shareToggle">我愿意匿名分享这份回忆</label>
+      <label class="check-label" for="shareToggle">分享到共鸣网络</label>
     </div>
 
     <div class="signature-options" id="signatureOptions">
@@ -393,6 +401,8 @@ const $ = id => document.getElementById(id);
 const sentenceInput = $('sentenceInput');
 const charCount = $('charCount');
 const identityGrid = $('identityGrid');
+const customIdentityInput = $('customIdentityInput');
+const customIdentity = $('customIdentity');
 const shareToggle = $('shareToggle');
 const signatureOptions = $('signatureOptions');
 const sigRadios = signatureOptions.querySelectorAll('.signature-radio');
@@ -427,9 +437,21 @@ identityGrid.addEventListener('click', e => {
   if (!chip) return;
   identityGrid.querySelectorAll('.identity-chip').forEach(c => c.classList.remove('selected'));
   chip.classList.add('selected');
-  state.identity = chip.dataset.value;
+  if (chip.dataset.value === '__custom__') {
+    customIdentityInput.classList.add('visible');
+    customIdentity.focus();
+    state.identity = customIdentity.value;
+  } else {
+    customIdentityInput.classList.remove('visible');
+    state.identity = chip.dataset.value;
+  }
 });
 
+
+// ===== Custom identity =====
+customIdentity.addEventListener('input', () => {
+  state.identity = customIdentity.value;
+});
 // ===== Share toggle =====
 shareToggle.addEventListener('change', () => {
   state.shareEnabled = shareToggle.checked;
