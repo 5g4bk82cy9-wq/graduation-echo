@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>毕业回响 · 记忆生成器</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FDF6EE;
+  --card:#FFFFFF;
+  --primary:#C8A56D;
+  --primary-dark:#A8854D;
+  --primary-light:#F5EDDF;
+  --text:#2C1810;
+  --text-secondary:#8B7355;
+  --text-light:#B8A58A;
+  --border:#EDE0D0;
+  --accent:#D45769;
+  --success:#6B9E7A;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 2px 16px rgba(44,24,16,0.06);
+  --shadow-lg:0 8px 32px rgba(44,24,16,0.1);
+  --font-serif:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-sans);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.6;
+  overflow-x:hidden
+}
+/* bg decoration */
+body::before{
+  content:'';position:fixed;top:-40%;left:-20%;width:80%;height:80%;
+  background:radial-gradient(circle at 30% 30%,rgba(200,165,109,0.08),transparent 70%);
+  pointer-events:none;z-index:0
+}
+body::after{
+  content:'';position:fixed;bottom:-30%;right:-20%;width:70%;height:70%;
+  background:radial-gradient(circle at 70% 70%,rgba(212,87,105,0.05),transparent 70%);
+  pointer-events:none;z-index:0
+}
+.container{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:24px 16px 48px}
+/* header */
+.header{text-align:center;padding:32px 0 24px}
+.header-icon{font-size:40px;margin-bottom:8px;display:block}
+.header h1{
+  font-family:var(--font-serif);
+  font-size:28px;font-weight:700;
+  letter-spacing:2px;color:var(--text)
+}
+.header p{font-size:14px;color:var(--text-secondary);margin-top:4px}
+/* card */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:24px 20px;
+  margin-bottom:16px;
+  transition:opacity 0.3s,transform 0.3s
+}
+.card-title{
+  font-family:var(--font-serif);
+  font-size:15px;font-weight:600;
+  color:var(--primary-dark);
+  margin-bottom:16px;
+  letter-spacing:1px;
+  display:flex;align-items:center;gap:8px
+}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border)}
+/* form elements */
+textarea.input{
+  width:100%;border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:14px 16px;font-size:15px;
+  font-family:var(--font-serif);
+  color:var(--text);
+  background:var(--bg);
+  resize:none;min-height:80px;
+  outline:none;transition:border-color 0.2s,box-shadow 0.2s;
+  line-height:1.7
+}
+textarea.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(200,165,109,0.12)}
+textarea.input::placeholder{color:var(--text-light)}
+/* identity chips */
+.identity-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;margin:12px 0 4px
+}
+.identity-chip{
+  display:flex;align-items:center;justify-content:center;
+  padding:8px 4px;font-size:13px;font-weight:500;
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--card);
+  color:var(--text-secondary);
+  cursor:pointer;transition:all 0.2s;
+  text-align:center;line-height:1.3;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none
+}
+.identity-chip:active{transform:scale(0.96)}
+.identity-chip.selected{
+  border-color:var(--primary);
+  background:var(--primary-light);
+  color:var(--primary-dark)
+}
+/* checkbox & radio */
+.check-row{display:flex;align-items:center;gap:10px;margin:12px 0 4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.check-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
+.check-label{font-size:14px;color:var(--text-secondary);user-select:none}
+/* signature options */
+.signature-options{
+  display:none;flex-wrap:wrap;gap:8px;
+  margin:10px 0 4px 28px
+}
+.signature-options.visible{display:flex}
+.signature-radio{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 12px;font-size:13px;
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none
+}
+.signature-radio.selected{border-color:var(--primary);background:var(--primary-light)}
+.signature-radio input[type="radio"]{display:none}
+.signature-input{
+  display:none;width:100%;max-width:200px;
+  margin:6px 0 0 28px
+}
+.signature-input.visible{display:block}
+.signature-input input{
+  width:100%;padding:8px 12px;font-size:14px;
+  border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  outline:none;background:var(--bg);
+  color:var(--text);transition:border-color 0.2s
+}
+.signature-input input:focus{border-color:var(--primary)}
+/* button */
+.btn{
+  display:block;width:100%;padding:14px 24px;
+  border:none;border-radius:var(--radius-sm);
+  font-size:16px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  font-family:var(--font-sans);
+  letter-spacing:1px
+}
+.btn:active{transform:scale(0.98)}
+.btn-primary{
+  background:var(--primary);color:#fff
+}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-primary:disabled{
+  opacity:0.4;cursor:not-allowed;transform:none
+}
+/* loading */
+.loading{display:none;text-align:center;padding:32px 0}
+.loading.visible{display:block}
+.loading-spinner{
+  width:36px;height:36px;margin:0 auto 16px;
+  border:3px solid var(--border);
+  border-top-color:var(--primary);
+  border-radius:50%;animation:spin 0.8s linear infinite
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text-secondary)}
+.loading-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}}
+/* result */
+.result-section{display:none}
+.result-section.visible{display:block}
+.section-divider{
+  text-align:center;margin:24px 0 16px;
+  font-size:12px;color:var(--text-light);
+  letter-spacing:2px;position:relative
+}
+.section-divider::before,.section-divider::after{
+  content:'';position:absolute;top:50%;width:30%;
+  height:1px;background:var(--border)
+}
+.section-divider::before{left:0}
+.section-divider::after{right:0}
+.memory-text{
+  font-family:var(--font-serif);
+  font-size:16px;line-height:2;
+  color:var(--text);padding:4px 0
+}
+.memory-text .highlight{
+  background:linear-gradient(to top,transparent 60%,rgba(200,165,109,0.15) 60%);
+  padding:0 2px
+}
+.quote-block{
+  margin:16px 0;padding:14px 16px;
+  background:var(--bg);border-radius:var(--radius-sm);
+  font-family:var(--font-serif);
+  font-size:14px;color:var(--text-secondary);
+  line-height:1.8;text-align:center;
+  border-left:3px solid var(--primary)
+}
+.roast-text{
+  font-size:14px;color:var(--accent);
+  text-align:center;padding:8px 0;
+  font-style:italic
+}
+.keyword-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  margin:12px auto 0;padding:6px 16px;
+  background:linear-gradient(135deg,var(--primary-light),#fff);
+  border:1px solid var(--primary);
+  border-radius:20px;
+  font-size:13px;color:var(--primary-dark);
+  font-weight:600;letter-spacing:1px
+}
+.keyword-tag-wrapper{text-align:center;margin-top:4px}
+/* resonance card */
+.resonance-card{
+  padding:20px;border-radius:var(--radius);
+  margin-top:4px;position:relative;overflow:hidden;
+  transition:opacity 0.4s
+}
+.resonance-card.resonance{
+  background:linear-gradient(135deg,#FFF5EB,#FFF0F0);
+  border:1px solid rgba(200,165,109,0.3)
+}
+.resonance-card.group{
+  background:linear-gradient(135deg,#F0F6FF,#F5F0FF);
+  border:1px solid rgba(107,126,154,0.3)
+}
+.resonance-card.unique{
+  background:linear-gradient(135deg,#FFF5EB,#F5F9F0);
+  border:1px solid rgba(107,158,122,0.3)
+}
+.resonance-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:12px;
+  font-size:12px;font-weight:600;
+  margin-bottom:12px;letter-spacing:0.5px
+}
+.resonance-card.resonance .resonance-badge{
+  background:rgba(200,165,109,0.15);color:var(--primary-dark)
+}
+.resonance-card.group .resonance-badge{
+  background:rgba(107,126,154,0.15);color:#5A6B80
+}
+.resonance-card.unique .resonance-badge{
+  background:rgba(107,158,122,0.15);color:var(--success)
+}
+.resonance-content{
+  font-family:var(--font-serif);
+  font-size:15px;line-height:1.9;
+  color:var(--text)
+}
+.resonance-meta{
+  font-size:12px;color:var(--text-light);
+  margin-top:12px
+}
+/* footer */
+.footer{text-align:center;padding:32px 0 16px;font-size:12px;color:var(--text-light);line-height:2}
+.footer .stat{font-size:13px;color:var(--text-secondary)}
+/* error */
+.error-msg{
+  display:none;text-align:center;padding:12px;
+  color:var(--accent);font-size:14px;
+  background:#FFF5F5;border-radius:var(--radius-sm);
+  margin-top:8px
+}
+.error-msg.visible{display:block}
+/* transition helpers */
+.fade-in{animation:fadeIn 0.5s ease forwards}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.slide-up{animation:slideUp 0.4s ease forwards}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* responsive */
+@media(max-width:400px){
+  .identity-grid{grid-template-columns:repeat(2,1fr)}
+  .header h1{font-size:24px}
+  .card{padding:20px 16px}
+}
+/* scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <!-- Header -->
+  <header class="header">
+    <span class="header-icon">🎓</span>
+    <h1>毕业回响</h1>
+    <p>用一句话记住你的大学四年</p>
+  </header>
+
+  <!-- Input Card -->
+  <div class="card" id="inputCard">
+    <div class="card-title">自画像</div>
+    <textarea class="input" id="sentenceInput" rows="2" placeholder="大学四年，像一碗加多了醋的麻辣烫……" maxlength="80"></textarea>
+    <div style="text-align:right;font-size:12px;color:var(--text-light);margin-top:4px"><span id="charCount">0</span>/80</div>
+
+    <div class="card-title" style="margin-top:16px">隐藏身份</div>
+    <div class="identity-grid" id="identityGrid">
+      <div class="identity-chip" data-value="早八失踪人口">早八失踪人口</div>
+      <div class="identity-chip" data-value="食堂活地图">食堂活地图</div>
+      <div class="identity-chip" data-value="朋友圈诗人">朋友圈诗人</div>
+      <div class="identity-chip" data-value="图书馆幽灵">图书馆幽灵</div>
+      <div class="identity-chip" data-value="社团顶梁柱">社团顶梁柱</div>
+      <div class="identity-chip" data-value="实验室钉子户">实验室钉子户</div>
+    </div>
+
+    <div class="check-row" id="shareCheck">
+      <input type="checkbox" id="shareToggle">
+      <label class="check-label" for="shareToggle">我愿意匿名分享这份回忆</label>
+    </div>
+
+    <div class="signature-options" id="signatureOptions">
+      <label class="signature-radio selected" data-value="anonymous">
+        <input type="radio" name="signature" value="anonymous" checked> 匿名
+      </label>
+      <label class="signature-radio" data-value="nickname">
+        <input type="radio" name="signature" value="nickname"> 昵称
+      </label>
+      <label class="signature-radio" data-value="realname">
+        <input type="radio" name="signature" value="realname"> 真实姓名
+      </label>
+    </div>
+    <div class="signature-input" id="signatureInput">
+      <input type="text" id="signatureValue" placeholder="输入你的昵称或姓名" maxlength="20">
+    </div>
+
+    <button class="btn btn-primary" id="generateBtn" disabled>生成回忆</button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">正在为你编织记忆<span class="loading-dots"></span></div>
+  </div>
+
+  <!-- Result Section -->
+  <div class="result-section" id="resultSection">
+    <!-- Memory Card -->
+    <div class="card" id="memoryCard">
+      <div class="card-title">你的毕业回忆</div>
+      <div class="memory-text" id="memoryText"></div>
+      <div class="quote-block" id="quoteBlock"></div>
+      <div class="roast-text" id="roastText"></div>
+      <div class="keyword-tag-wrapper" id="keywordWrapper"></div>
+    </div>
+
+    <!-- Resonance Section -->
+    <div class="section-divider" id="resonanceDivider">· 共 鸣 ·</div>
+
+    <div class="card" id="resonanceCard">
+      <div class="resonance-card" id="resonanceInner">
+        <div class="resonance-badge" id="resonanceBadge"></div>
+        <div class="resonance-content" id="resonanceContent"></div>
+        <div class="resonance-meta" id="resonanceMeta"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="stat" id="statDisplay"></div>
+    <div>毕业回响 · 2026</div>
+  </div>
+</div>
+
+<script>
+// ===== State =====
+const state = {
+  sentence: '',
+  identity: '',
+  shareEnabled: false,
+  signatureType: 'anonymous',
+  signatureValue: '',
+  memoryData: null,
+  resonanceData: null
+};
+
+// ===== DOM refs =====
+const $ = id => document.getElementById(id);
+const sentenceInput = $('sentenceInput');
+const charCount = $('charCount');
+const identityGrid = $('identityGrid');
+const shareToggle = $('shareToggle');
+const signatureOptions = $('signatureOptions');
+const sigRadios = signatureOptions.querySelectorAll('.signature-radio');
+const signatureInput = $('signatureInput');
+const signatureValue = $('signatureValue');
+const generateBtn = $('generateBtn');
+const errorMsg = $('errorMsg');
+const loading = $('loading');
+const resultSection = $('resultSection');
+const memoryText = $('memoryText');
+const quoteBlock = $('quoteBlock');
+const roastText = $('roastText');
+const keywordWrapper = $('keywordWrapper');
+const resonanceDivider = $('resonanceDivider');
+const resonanceInner = $('resonanceInner');
+const resonanceBadge = $('resonanceBadge');
+const resonanceContent = $('resonanceContent');
+const resonanceMeta = $('resonanceMeta');
+const statDisplay = $('statDisplay');
+
+// ===== Sentence input =====
+sentenceInput.addEventListener('input', () => {
+  const len = sentenceInput.value.length;
+  charCount.textContent = len;
+  generateBtn.disabled = len < 4;
+  state.sentence = sentenceInput.value;
+});
+
+// ===== Identity selector =====
+identityGrid.addEventListener('click', e => {
+  const chip = e.target.closest('.identity-chip');
+  if (!chip) return;
+  identityGrid.querySelectorAll('.identity-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  state.identity = chip.dataset.value;
+});
+
+// ===== Share toggle =====
+shareToggle.addEventListener('change', () => {
+  state.shareEnabled = shareToggle.checked;
+  signatureOptions.classList.toggle('visible', shareToggle.checked);
+  if (!shareToggle.checked) {
+    signatureInput.classList.remove('visible');
+  }
+});
+
+// ===== Signature radio =====
+sigRadios.forEach(radio => {
+  radio.addEventListener('click', () => {
+    sigRadios.forEach(r => r.classList.remove('selected'));
+    radio.classList.add('selected');
+    const val = radio.dataset.value;
+    state.signatureType = val;
+    signatureInput.classList.toggle('visible', val === 'nickname' || val === 'realname');
+    signatureValue.value = '';
+    state.signatureValue = '';
+  });
+});
+
+signatureValue.addEventListener('input', () => {
+  state.signatureValue = signatureValue.value;
+});
+
+// ===== Generate =====
+generateBtn.addEventListener('click', generate);
+
+async function generate() {
+  if (generateBtn.disabled) return;
+
+  // Reset UI
+  errorMsg.classList.remove('visible');
+  resultSection.classList.remove('visible');
+  loading.classList.add('visible');
+  generateBtn.disabled = true;
+  generateBtn.textContent = '生成中…';
+
+  try {
+    // Step 1: Generate memory
+    const chatResp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sentence: state.sentence,
+        identity: state.identity
+      })
+    });
+
+    if (!chatResp.ok) {
+      const err = await chatResp.json();
+      throw new Error(err.error || '生成失败');
+    }
+
+    const chatData = await chatResp.json();
+    state.memoryData = chatData;
+
+    // Display memory
+    displayMemory(chatData);
+    loading.classList.remove('visible');
+    resultSection.classList.add('visible');
+
+    // Scroll to result
+    setTimeout(() => {
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+
+    // Step 2: Store if shared
+    if (state.shareEnabled) {
+      storeMemory(chatData).catch(() => {});
+    }
+
+    // Step 3: Resonance match (always)
+    findResonance(chatData);
+
+  } catch (err) {
+    loading.classList.remove('visible');
+    generateBtn.disabled = false;
+    generateBtn.textContent = '生成回忆';
+    errorMsg.textContent = err.message || '网络开小差了，请稍后再试';
+    errorMsg.classList.add('visible');
+  }
+}
+
+// ===== Display memory =====
+function displayMemory(data) {
+  memoryText.textContent = data.memory;
+
+  quoteBlock.textContent = data.quote || '';
+  quoteBlock.style.display = data.quote ? 'block' : 'none';
+
+  roastText.textContent = data.roast ? '\u2728 ' + data.roast : '';
+  roastText.style.display = data.roast ? 'block' : 'none';
+
+  keywordWrapper.innerHTML = '<span class="keyword-tag">\uD83C\uDFF7\uFE0F ' + data.keyword + '</span>';
+}
+
+// ===== Store memory =====
+async function storeMemory(data) {
+  try {
+    await fetch('/api/store', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sentence: state.sentence,
+        identity: state.identity,
+        memory: data.memory,
+        quote: data.quote,
+        roast: data.roast,
+        keyword: data.keyword,
+        signature_type: state.signatureType,
+        signature_value: state.signatureType === 'anonymous' ? '' : state.signatureValue
+      })
+    });
+  } catch {}
+}
+
+// ===== Find resonance =====
+async function findResonance(data) {
+  try {
+    const matchResp = await fetch('/api/match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        keyword: data.keyword,
+        memory: data.memory,
+        sentence: state.sentence,
+        identity: state.identity
+      })
+    });
+
+    if (!matchResp.ok) return;
+
+    const matchData = await matchResp.json();
+    state.resonanceData = matchData;
+    displayResonance(matchData);
+  } catch {}
+}
+
+// ===== Display resonance =====
+function displayResonance(data) {
+  resonanceInner.className = 'resonance-card';
+
+  let badgeText, badgeIcon;
+  switch (data.type) {
+    case 'resonance':
+      resonanceInner.classList.add('resonance');
+      badgeText = '\u2728 \u8FDC\u60A0\u7684\u76F8\u4F3C\u6027';
+      badgeIcon = '\uD83D\uDD2A';
+      break;
+    case 'group':
+      resonanceInner.classList.add('group');
+      badgeText = '\uD83C\uDF0A \u7FA4\u50CF\u5FC3\u58F0';
+      badgeIcon = '\uD83D\uDC65';
+      break;
+    default:
+      resonanceInner.classList.add('unique');
+      badgeText = '\uD83C\uDFC6 \u72EC\u7279\u6027\u8BC1\u4E66';
+      badgeIcon = '\uD83C\uDF1F';
+  }
+
+  resonanceBadge.textContent = badgeIcon + ' ' + badgeText;
+  resonanceContent.textContent = data.content;
+
+  let metaParts = [];
+  if (data.matchCount > 0) {
+    metaParts.push('\u76F8\u4F3C\u56DE\u5FC6 ' + data.matchCount + ' \u7BC7');
+  }
+  if (data.totalCount) {
+    metaParts.push('\u5171 ' + data.totalCount + ' \u4EBA\u7559\u4E0B\u56DE\u5FC6');
+  }
+  if (data.matchedSentence) {
+    metaParts.push('\u300C' + data.matchedSentence + '\u300D');
+  }
+  resonanceMeta.textContent = metaParts.join(' \u00B7 ');
+
+  resonanceDivider.style.display = 'block';
+
+  setTimeout(() => {
+    resonanceInner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 500);
+}
+
+// ===== Init =====
+(async function init() {
+  try {
+    const resp = await fetch('/api/store');
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data && data.total) {
+        statDisplay.textContent = '\u5DF2\u6709 ' + data.total + ' \u4EBA\u5728\u8FD9\u91CC\u7559\u4E0B\u56DE\u5FC6';
+      }
+    }
+  } catch {}
+})();
+</script>
+</body>
+</html>
