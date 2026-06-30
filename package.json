@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "毕业季·AI 记忆生成与共鸣网络",
   "private": true,
-  "type": "module",
+  "scripts": {
+    "vercel-build": "echo 'Static deployment'"
+  },
   "dependencies": {
     "@vercel/kv": "^1.0.1"
   }
