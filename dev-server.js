@@ -58,33 +58,31 @@ async function handleChat(body) {
   if (!sentence || !sentence.trim()) {
     return { status: 400, body: { error: '请输入你的一句话回忆' } };
   }
-  const identityText = identity ? `\n隐藏身份：${identity}` : '';
-  const systemPrompt = `你是一位大学记忆作家，擅长用细腻温暖的文字捕捉校园生活的闪光瞬间。
+  const identityText = identity ? `\nta形容自己是「${identity}」。` : '';
+    const systemPrompt = `用户发来一段关于大学四年的自画像。你的任务是理解ta这句话背后的情绪核心，然后：
 
-根据用户输入的一句话自画像，为ta写一段200-300字的第二人称回忆。
+1. 先找一句真实存在的金句作为开场，可以是原著段落、电影台词、歌词等，必须真实存在，用「」引号括起来并标注出处。
+2. 然后用第二人称写一段回应（100-180字），稳稳接住ta的感受。语气可以是朋友共情、长者宽慰、行人见证等不同角度，自然不生硬，像是一个真实的人在说话。
 
-要求：
-1. 基于自画像合理扩充，不虚构具体细节
-2. 结尾附带一句善意的吐槽，让回忆温暖但不煽情
-3. 引用一句真实存在的古今中外金句（诗词/歌词/台词均可），标注出处
-4. 输出一个5字以内的"共鸣关键词"，概括这段回忆的核心情绪
+再加一句善意的吐槽，温暖不煽情。
+为系统生成若干个索引关键词（内部使用，不展示给用户），用于匹配有相似感受的人。每15字生成1个，最多5个。每个不超过5个字。
 
-请严格以 JSON 格式输出：
+请严格以 JSON 格式输出，不要输出任何其他内容：
 {
-  "memory": "（200-300字的第二人称回忆正文）",
   "quote": "「金句原文」——出处",
+  "memory": "（第二人称回应，100-180字）",
   "roast": "（一句善意的吐槽）",
-  "keyword": "（5字以内的共鸣关键词）"
+  "keywords": ["关键词1", "关键词2"]
 }`;
 
   const raw = await callDeepSeek([
     { role: 'system', content: systemPrompt },
-    { role: 'user', content: `用户的自画像：${sentence}${identityText}` }
+    { role: 'user', content: `ta说：${sentence}${identityText}` }
   ]);
 
   let result;
   try { result = JSON.parse(raw); }
-  catch { result = { memory: raw, quote: '', roast: '', keyword: '青春' }; }
+  catch { result = { memory: raw, quote: '', roast: '', keywords: ['青春'] }; }
 
   return {
     status: 200,
@@ -92,19 +90,24 @@ async function handleChat(body) {
       memory: result.memory || '',
       quote: result.quote || '',
       roast: result.roast || '',
-      keyword: (result.keyword || '青春').trim().slice(0, 5)
+      keywords: (Array.isArray(result.keywords) ? result.keywords.slice(0, Math.min(Math.max(Math.ceil((sentence || '').length / 15), 1), 5)).map(k => (k || '').trim().slice(0, 5)).filter(Boolean) : ['青春'])
     }
   };
 }
 
 // POST /api/store
 async function handleStore(body) {
-  const { sentence, memory, keyword } = body;
-  if (!sentence || !memory || !keyword) {
+  const { sentence, memory, keywords } = body;
+  if (!sentence || !memory || !keywords) {
     return { status: 400, body: { error: '缺少必要字段' } };
   }
-  const entry = { ...body, created_at: Date.now() };
-  kvLpush(`keyword:${keyword}`, entry);
+  const kwList = Array.isArray(keywords) ? keywords.slice(0, 5) : ['青春'];
+  const entry = { ...body, keywords: kwList, created_at: Date.now() };
+  for (const kw of kwList) {
+    if (kw && kw.trim()) {
+      kvLpush(`keyword:${kw.trim()}`, entry);
+    }
+  }
   stats.total++;
   return { status: 200, body: { success: true, total: stats.total } };
 }
@@ -116,10 +119,19 @@ function handleStoreGet() {
 
 // POST /api/match
 async function handleMatch(body) {
-  const { keyword, memory, sentence } = body;
-  if (!keyword) return { status: 400, body: { error: '缺少共鸣关键词' } };
+  const { keywords, memory, sentence } = body;
+  if (!keywords || !keywords.length) return { status: 400, body: { error: '缺少共鸣关键词' } };
 
-  const entries = kvLrange(`keyword:${keyword}`);
+  const currentMem = memory || '';
+  const seen = new Set();
+  const entries = [];
+  for (const kw of keywords) {
+    const items = kvLrange(`keyword:${kw}`);
+    items.forEach(item => {
+      const key = item.memory || Math.random().toString();
+      if (key !== currentMem && !seen.has(key)) { seen.add(key); entries.push(item); }
+    });
+  }
   const count = entries.length;
 
   if (count === 0) {
@@ -143,13 +155,13 @@ async function handleMatch(body) {
 回忆A：「${sentence}」→ ${memory}
 回忆B：「${other.sentence}」→ ${other.memory}
 
-请写一段不超过80字的诗意"发现卡"，发现他们青春中的共鸣点。要求温暖、惊喜、不煽情。直接输出发现文字，不要标题。`;
+请写一段不超过80字的诗意"发现卡"。要求：不要使用分类语言（不要写"你们都是""你们的共同点是""你们属于"等），不要标签化；只描述两个具体感受之间的回响；温暖、具体、诗意，不煽情。直接输出发现文字，不要标题。`;
       discovery = await callDeepSeek([
         { role: 'system', content: '你是一位细腻的共鸣诗人。直接输出发现文字，不要任何前缀。' },
         { role: 'user', content: prompt }
       ], 0.8);
     } catch {
-      discovery = `在无数种可能中，有人和你有相似的注脚。「${other.sentence}」—— 同一段青春，不同的坐标，但你们都在相似的时刻，感受过相同的心跳。`;
+      discovery = ['在无数种可能中，有人和你有相似的注脚。—— 同一段青春，不同的坐标，但你们都在相似的时刻，感受过相同的心跳。','有人用另一句话，说了同一件事。你们不在同一个坐标系里，但那阵风的温度是一样的。','这个园子里，有人在不同的角落，和你翻到了同一页书的同一行。','不是一模一样的故事，是故事里那一声叹息，让你认出了ta。','你以为只有你一个人记得的那个瞬间，有人在另一天，用另一种方式替你记住了。'][Math.floor(Math.random()*5)];
     }
     return {
       status: 200,
@@ -158,7 +170,11 @@ async function handleMatch(body) {
         content: discovery.replace(/^[\[【（(][^\]】）)]*[\]】）)]\s*/g, '').trim(),
         matchCount: count,
         totalCount: stats.total,
-        matchedSentence: other.sentence
+        currentKeywords: keywords,
+        people: entries.slice(0, 5).map(function(e) {
+          var sig = (!e || e.signature_type === 'anonymous' || !e.signature_type) ? '匿名' : (e.signature_value || '匿名');
+          return { signature: sig, keywords: Array.isArray(e.keywords) ? e.keywords : ['青春'] };
+        })
       }
     };
   }
@@ -172,13 +188,13 @@ async function handleMatch(body) {
 
 ${samples.map((s, i) => `同学${i + 1}：「${s.sentence}」→ ${s.memory}`).join('\n')}
 
-请写一段不超过100字的群像总结，捕捉这些年轻人共同的青春气息。温暖、有共鸣、不说教。直接输出总结文字，不要标题。`;
+请写一段不超过100字的文字。要求：不要使用分类语言（不要写"他们都有""他们的共同点是"等），不要标签化；只描述感受之间的共鸣；温暖、有共鸣、不说教。直接输出总结文字，不要标题。`;
     summary = await callDeepSeek([
       { role: 'system', content: '你是一位细腻的人文观察者。直接输出总结文字，不要任何前缀。' },
       { role: 'user', content: prompt }
     ], 0.8);
   } catch {
-    summary = `从不同人的故事里，我们看到了相似的青春模样。${samples.map(s => `"${s.sentence}"`).join('、')}——这些自画像都藏着同一种热烈和眷恋。`;
+    summary = ['在无数种可能中，有人和你有相似的注脚。—— 同一段青春，不同的坐标，但你们都在相似的时刻，感受过相同的心跳。','有人用另一句话，说了同一件事。你们不在同一个坐标系里，但那阵风的温度是一样的。','这个园子里，有人在不同的角落，和你翻到了同一页书的同一行。','不是一模一样的故事，是故事里那一声叹息，让你认出了ta。','你以为只有你一个人记得的那个瞬间，有人在另一天，用另一种方式替你记住了。'][Math.floor(Math.random()*5)];
   }
   return {
     status: 200,
@@ -186,7 +202,9 @@ ${samples.map((s, i) => `同学${i + 1}：「${s.sentence}」→ ${s.memory}`).j
       type: 'group',
       content: summary.replace(/^[\[【（(][^\]】）)]*[\]】）)]\s*/g, '').trim(),
       matchCount: count,
-      totalCount: stats.total
+      totalCount: stats.total,
+      matchedKeyword: keywords,
+      matchedSignatures: samples.map(s => { if (!s || s.signature_type === 'anonymous' || !s.signature_type) return '匿名'; return s.signature_value || '匿名'; })
     }
   };
 }

@@ -1,298 +1,330 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>毕业回响 · 记忆生成器</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#FDF6EE;
-  --card:#FFFFFF;
-  --primary:#C8A56D;
-  --primary-dark:#A8854D;
-  --primary-light:#F5EDDF;
-  --text:#2C1810;
-  --text-secondary:#8B7355;
-  --text-light:#B8A58A;
-  --border:#EDE0D0;
-  --accent:#D45769;
-  --success:#6B9E7A;
-  --radius:16px;
-  --radius-sm:10px;
-  --shadow:0 2px 16px rgba(44,24,16,0.06);
-  --shadow-lg:0 8px 32px rgba(44,24,16,0.1);
-  --font-serif:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+  --bg:#f5e6d3;
+  --card:rgba(255,255,255,0.55);
+  --card-border:rgba(139,69,19,0.12);
+  --primary:#8b4513;
+  --primary-dark:#6b3510;
+  --primary-light:#e8d5c0;
+  --text:#4a3520;
+  --text-secondary:#8b7355;
+  --text-light:#b8a080;
+  --border:rgba(139,69,19,0.12);
+  --accent:#c94c4c;
+  --success:#2e4a3f;
+  --radius:12px;
+  --radius-sm:8px;
+  --shadow:0 1px 8px rgba(139,69,19,0.06);
+  --shadow-lg:0 4px 20px rgba(139,69,19,0.08);
+  --font-serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
   --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif
+}
+/* paper texture */
+body::before{content:'';position:fixed;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0
+}
+body::after{content:'';position:fixed;top:-30%;left:-20%;width:70%;height:70%;
+  background:radial-gradient(circle at 40% 40%,rgba(139,69,19,0.04),transparent 70%);
+  pointer-events:none;z-index:0
 }
 html{font-size:16px;-webkit-text-size-adjust:100%}
 body{
-  font-family:var(--font-sans);
+  font-family:var(--font-serif);
   background:var(--bg);
   color:var(--text);
   min-height:100vh;
-  line-height:1.6;
+  line-height:1.7;
   overflow-x:hidden
 }
-/* bg decoration */
-body::before{
-  content:'';position:fixed;top:-40%;left:-20%;width:80%;height:80%;
-  background:radial-gradient(circle at 30% 30%,rgba(200,165,109,0.08),transparent 70%);
-  pointer-events:none;z-index:0
+.container{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:20px 16px 48px}
+@media(min-width:768px){
+  .container{max-width:600px;padding:32px 24px 64px}
 }
-body::after{
-  content:'';position:fixed;bottom:-30%;right:-20%;width:70%;height:70%;
-  background:radial-gradient(circle at 70% 70%,rgba(212,87,105,0.05),transparent 70%);
-  pointer-events:none;z-index:0
-}
-.container{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:24px 16px 48px}
 /* header */
-.header{text-align:center;padding:32px 0 24px}
-.header-icon{font-size:40px;margin-bottom:8px;display:block}
+.header{text-align:center;padding:28px 0 20px}
+.header-icon{font-size:36px;margin-bottom:6px;display:block}
 .header h1{
   font-family:var(--font-serif);
-  font-size:28px;font-weight:700;
-  letter-spacing:2px;color:var(--text)
+  font-size:26px;font-weight:400;
+  letter-spacing:3px;color:var(--primary)
 }
-.header p{font-size:14px;color:var(--text-secondary);margin-top:4px}
+.header p{font-size:13px;color:var(--text-secondary);margin-top:4px}
 /* card */
 .card{
   background:var(--card);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  border:1px solid var(--card-border);
   border-radius:var(--radius);
   box-shadow:var(--shadow);
-  padding:24px 20px;
-  margin-bottom:16px;
+  padding:22px 18px;
+  margin-bottom:14px;
   transition:opacity 0.3s,transform 0.3s
 }
 .card-title{
   font-family:var(--font-serif);
-  font-size:15px;font-weight:600;
-  color:var(--primary-dark);
-  margin-bottom:16px;
-  letter-spacing:1px;
+  font-size:14px;font-weight:400;
+  color:var(--primary);
+  margin-bottom:14px;
+  letter-spacing:2px;
   display:flex;align-items:center;gap:8px
 }
 .card-title::after{content:'';flex:1;height:1px;background:var(--border)}
 /* form elements */
 textarea.input{
-  width:100%;border:1.5px solid var(--border);
+  width:100%;border:1px solid var(--border);
   border-radius:var(--radius-sm);
-  padding:14px 16px;font-size:15px;
+  padding:12px 14px;font-size:14px;
   font-family:var(--font-serif);
   color:var(--text);
-  background:var(--bg);
+  background:rgba(255,255,255,0.35);
   resize:none;min-height:80px;
   outline:none;transition:border-color 0.2s,box-shadow 0.2s;
   line-height:1.7
 }
-textarea.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(200,165,109,0.12)}
+textarea.input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(139,69,19,0.08)}
 textarea.input::placeholder{color:var(--text-light)}
-/* identity chips */
-.identity-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;margin:12px 0 4px
-}
-.identity-chip{
-  display:flex;align-items:center;justify-content:center;
-  padding:8px 4px;font-size:13px;font-weight:500;
-  border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);
-  background:var(--card);
-  color:var(--text-secondary);
-  cursor:pointer;transition:all 0.2s;
-  text-align:center;line-height:1.3;
-  -webkit-tap-highlight-color:transparent;
-  user-select:none
-}
-.identity-chip:active{transform:scale(0.96)}
-.identity-chip.selected{
-  border-color:var(--primary);
-  background:var(--primary-light);
-  color:var(--primary-dark)
-}
 /* checkbox & radio */
-.check-row{display:flex;align-items:center;gap:10px;margin:12px 0 4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.check-row{display:flex;align-items:center;gap:10px;margin:10px 0 4px;cursor:pointer}
 .check-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
 .check-label{font-size:14px;color:var(--text-secondary);user-select:none}
 /* signature options */
 .signature-options{
   display:none;flex-wrap:wrap;gap:8px;
-  margin:10px 0 4px 28px
+  margin:8px 0 4px 28px
 }
 .signature-options.visible{display:flex}
 .signature-radio{
   display:flex;align-items:center;gap:6px;
   padding:6px 12px;font-size:13px;
-  border:1.5px solid var(--border);
+  border:1px solid var(--border);
   border-radius:var(--radius-sm);
   cursor:pointer;transition:all 0.2s;
-  -webkit-tap-highlight-color:transparent;
   user-select:none
 }
 .signature-radio.selected{border-color:var(--primary);background:var(--primary-light)}
 .signature-radio input[type="radio"]{display:none}
 .signature-input{
   display:none;width:100%;max-width:200px;
-  margin:6px 0 0 28px
+  margin:4px 0 0 28px
 }
 .signature-input.visible{display:block}
 .signature-input input{
   width:100%;padding:8px 12px;font-size:14px;
-  border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  outline:none;background:var(--bg);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  outline:none;background:rgba(255,255,255,0.35);
   color:var(--text);transition:border-color 0.2s
 }
 .signature-input input:focus{border-color:var(--primary)}
-.identity-input{margin:12px 0 4px}
-.identity-input.visible{display:block}
-.identity-input input{width:100%;padding:8px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);outline:none;background:var(--bg);color:var(--text);transition:border-color 0.2s}
-.identity-input input:focus{border-color:var(--primary)}
+.identity-field{margin:10px 0 4px}
+.identity-field input{width:100%;padding:8px 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-sm);outline:none;background:rgba(255,255,255,0.35);color:var(--text);transition:border-color 0.2s}
+.identity-field input:focus{border-color:var(--primary)}
 /* button */
 .btn{
-  display:block;width:100%;padding:14px 24px;
-  border:none;border-radius:var(--radius-sm);
-  font-size:16px;font-weight:600;
-  cursor:pointer;transition:all 0.2s;
-  -webkit-tap-highlight-color:transparent;
-  font-family:var(--font-sans);
-  letter-spacing:1px
+  display:block;width:100%;padding:12px 24px;
+  border:1px solid var(--primary);border-radius:var(--radius-sm);
+  font-size:15px;font-weight:400;
+  cursor:pointer;transition:all 0.3s;
+  font-family:var(--font-serif);
+  letter-spacing:2px;
+  background:transparent;color:var(--primary)
 }
 .btn:active{transform:scale(0.98)}
-.btn-primary{
-  background:var(--primary);color:#fff
-}
-.btn-primary:hover{background:var(--primary-dark)}
-.btn-primary:disabled{
-  opacity:0.4;cursor:not-allowed;transform:none
-}
+.btn-primary{background:var(--primary);color:#f5e6d3;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;transform:none}
 /* loading */
-.loading{display:none;text-align:center;padding:32px 0}
+.loading{display:none;text-align:center;padding:28px 0}
 .loading.visible{display:block}
 .loading-spinner{
-  width:36px;height:36px;margin:0 auto 16px;
-  border:3px solid var(--border);
+  width:32px;height:32px;margin:0 auto 12px;
+  border:2px solid var(--border);
   border-top-color:var(--primary);
   border-radius:50%;animation:spin 0.8s linear infinite
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:14px;color:var(--text-secondary)}
-.loading-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
-@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}}
+.loading-text{font-size:13px;color:var(--text-secondary)}
 /* result */
 .result-section{display:none}
 .result-section.visible{display:block}
 .section-divider{
-  text-align:center;margin:24px 0 16px;
-  font-size:12px;color:var(--text-light);
-  letter-spacing:2px;position:relative
+  text-align:center;margin:20px 0 14px;
+  font-size:11px;color:var(--text-light);
+  letter-spacing:3px;position:relative
 }
 .section-divider::before,.section-divider::after{
-  content:'';position:absolute;top:50%;width:30%;
+  content:'';position:absolute;top:50%;width:25%;
   height:1px;background:var(--border)
 }
 .section-divider::before{left:0}
 .section-divider::after{right:0}
 .memory-text{
   font-family:var(--font-serif);
-  font-size:16px;line-height:2;
-  color:var(--text);padding:4px 0
-}
-.memory-text .highlight{
-  background:linear-gradient(to top,transparent 60%,rgba(200,165,109,0.15) 60%);
-  padding:0 2px
+  font-size:15px;line-height:2;
+  color:var(--text);padding:2px 0
 }
 .quote-block{
-  margin:16px 0;padding:14px 16px;
-  background:var(--bg);border-radius:var(--radius-sm);
+  margin:14px 0;padding:12px 14px;
+  background:rgba(255,255,255,0.3);
+  border-radius:var(--radius-sm);
   font-family:var(--font-serif);
-  font-size:14px;color:var(--text-secondary);
+  font-size:13px;color:var(--text-secondary);
   line-height:1.8;text-align:center;
   border-left:3px solid var(--primary)
 }
+.quote-block + .memory-text{
+  border-top:1px solid var(--border);
+  padding-top:12px;margin-top:12px
+}
 .roast-text{
-  font-size:14px;color:var(--accent);
-  text-align:center;padding:8px 0;
+  font-size:13px;color:var(--accent);
+  text-align:center;padding:6px 0;
   font-style:italic
 }
-.keyword-tag{
-  display:inline-flex;align-items:center;gap:4px;
-  margin:12px auto 0;padding:6px 16px;
-  background:linear-gradient(135deg,var(--primary-light),#fff);
-  border:1px solid var(--primary);
-  border-radius:20px;
-  font-size:13px;color:var(--primary-dark);
-  font-weight:600;letter-spacing:1px
-}
-.keyword-tag-wrapper{text-align:center;margin-top:4px}
 /* resonance card */
 .resonance-card{
-  padding:20px;border-radius:var(--radius);
-  margin-top:4px;position:relative;overflow:hidden;
+  padding:18px;border-radius:var(--radius);
+  margin-top:2px;position:relative;overflow:hidden;
   transition:opacity 0.4s
 }
 .resonance-card.resonance{
-  background:linear-gradient(135deg,#FFF5EB,#FFF0F0);
-  border:1px solid rgba(200,165,109,0.3)
+  background:rgba(255,255,255,0.35);
+  border:1px solid var(--border)
 }
 .resonance-card.group{
-  background:linear-gradient(135deg,#F0F6FF,#F5F0FF);
-  border:1px solid rgba(107,126,154,0.3)
+  background:rgba(255,255,255,0.35);
+  border:1px solid var(--border)
 }
 .resonance-card.unique{
-  background:linear-gradient(135deg,#FFF5EB,#F5F9F0);
-  border:1px solid rgba(107,158,122,0.3)
+  background:rgba(255,255,255,0.35);
+  border:1px solid var(--border)
 }
 .resonance-badge{
   display:inline-flex;align-items:center;gap:6px;
-  padding:4px 12px;border-radius:12px;
-  font-size:12px;font-weight:600;
-  margin-bottom:12px;letter-spacing:0.5px
+  padding:2px 10px;border-radius:10px;
+  font-size:11px;font-weight:400;
+  margin-bottom:4px;letter-spacing:1px
 }
 .resonance-card.resonance .resonance-badge{
-  background:rgba(200,165,109,0.15);color:var(--primary-dark)
+  background:rgba(139,69,19,0.08);color:var(--primary)
 }
 .resonance-card.group .resonance-badge{
-  background:rgba(107,126,154,0.15);color:#5A6B80
+  background:rgba(46,74,63,0.08);color:var(--success)
 }
 .resonance-card.unique .resonance-badge{
-  background:rgba(107,158,122,0.15);color:var(--success)
+  background:rgba(212,163,115,0.15);color:#8b7355
 }
 .resonance-content{
   font-family:var(--font-serif);
-  font-size:15px;line-height:1.9;
-  color:var(--text)
+  font-size:14px;line-height:1.8;
+  color:var(--text);
+  padding:10px 0 6px;
+  text-align:center
 }
+.resonance-graph{text-align:center;margin:6px 0;min-height:10px}
 .resonance-meta{
-  font-size:12px;color:var(--text-light);
-  margin-top:12px
+  font-size:11px;color:var(--text-light);
+  text-align:center;
+  border-top:1px solid var(--border);
+  padding-top:8px;
+  margin-top:2px
 }
 /* footer */
-.footer{text-align:center;padding:32px 0 16px;font-size:12px;color:var(--text-light);line-height:2}
-.footer .stat{font-size:13px;color:var(--text-secondary)}
+.footer{text-align:center;padding:28px 0 14px;font-size:11px;color:var(--text-light);line-height:2}
+.footer .stat{font-size:12px;color:var(--text-secondary)}
 /* error */
 .error-msg{
-  display:none;text-align:center;padding:12px;
-  color:var(--accent);font-size:14px;
-  background:#FFF5F5;border-radius:var(--radius-sm);
-  margin-top:8px
+  display:none;text-align:center;padding:10px;
+  color:var(--accent);font-size:13px;
+  background:rgba(201,76,76,0.06);border-radius:var(--radius-sm);
+  margin-top:6px
 }
 .error-msg.visible{display:block}
 /* transition helpers */
 .fade-in{animation:fadeIn 0.5s ease forwards}
-@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.slide-up{animation:slideUp 0.4s ease forwards}
-@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* responsive */
-@media(max-width:400px){
-  .identity-grid{grid-template-columns:repeat(2,1fr)}
-  .header h1{font-size:24px}
-  .card{padding:20px 16px}
-}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 /* scrollbar */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* responsive */
+@media(max-width:400px){
+  .header h1{font-size:22px}
+  .card{padding:18px 14px}
+}
+@media(min-width:768px){
+  .resonance-content{font-size:15px}
+  .memory-text{font-size:16px}
+}
+
+/* privacy modal */
+.privacy-overlay{
+  position:fixed;inset:0;z-index:999;
+  background:rgba(74,53,32,0.4);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  animation:fadeIn 0.4s ease
+}
+.privacy-modal{
+  background:#f5e6d3;
+  border:1px solid rgba(139,69,19,0.15);
+  border-radius:14px;
+  box-shadow:0 8px 32px rgba(74,53,32,0.15);
+  max-width:460px;
+  width:100%;
+  max-height:90vh;
+  overflow-y:auto;
+  padding:28px 24px 22px;
+  position:relative
+}
+.privacy-modal::-webkit-scrollbar{width:3px}
+.privacy-modal::-webkit-scrollbar-thumb{background:rgba(139,69,19,0.15);border-radius:2px}
+.privacy-modal h2{
+  font-family:var(--font-serif);
+  font-size:18px;font-weight:400;
+  color:var(--primary);
+  letter-spacing:2px;
+  margin:0 0 4px;
+  text-align:center
+}
+.privacy-modal .subtitle{
+  font-size:11px;color:var(--text-light);
+  text-align:center;margin-bottom:18px;
+  letter-spacing:1px
+}
+.privacy-list{margin:0;padding:0;list-style:none}
+.privacy-list li{
+  font-size:12px;color:var(--text-secondary);
+  line-height:1.7;padding:7px 0;
+  border-bottom:1px solid rgba(139,69,19,0.05);
+  letter-spacing:0.3px
+}
+.privacy-list li:last-child{border-bottom:none}
+.privacy-list li strong{color:var(--text);font-weight:400}
+.privacy-agree{
+  display:block;width:100%;
+  padding:11px 24px;margin-top:18px;
+  border:1px solid var(--primary);
+  border-radius:var(--radius-sm);
+  background:var(--primary);color:#f5e6d3;
+  font-family:var(--font-serif);
+  font-size:14px;letter-spacing:2px;
+  cursor:pointer;transition:all 0.3s
+}
+.privacy-agree:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+/* prevent body scroll when modal open */
+body.modal-open{overflow:hidden}
+
 </style>
 </head>
 <body>
@@ -307,21 +339,12 @@ textarea.input::placeholder{color:var(--text-light)}
   <!-- Input Card -->
   <div class="card" id="inputCard">
     <div class="card-title">你的句子</div>
-    <textarea class="input" id="sentenceInput" rows="2" placeholder="大学四年你最想记住什么？" maxlength="80"></textarea>
-    <div style="text-align:right;font-size:12px;color:var(--text-light);margin-top:4px"><span id="charCount">0</span>/80</div>
+    <textarea class="input" id="sentenceInput" rows="2" placeholder="大学四年你最想记住什么？" maxlength="150"></textarea>
+    <div style="text-align:right;font-size:12px;color:var(--text-light);margin-top:4px"><span id="charCount">0</span>/150</div>
 
     <div class="card-title" style="margin-top:16px">你如何定义自己（选填）</div>
-    <div class="identity-grid" id="identityGrid">
-      <div class="identity-chip" data-value="早八失踪人口">早八失踪人口</div>
-      <div class="identity-chip" data-value="食堂活地图">食堂活地图</div>
-      <div class="identity-chip" data-value="朋友圈诗人">朋友圈诗人</div>
-      <div class="identity-chip" data-value="图书馆幽灵">图书馆幽灵</div>
-      <div class="identity-chip" data-value="社团顶梁柱">社团顶梁柱</div>
-      <div class="identity-chip" data-value="实验室钉子户">实验室钉子户</div>
-      <div class="identity-chip" data-value="__custom__">自定义</div>
-    </div>
-    <div class="identity-input" id="customIdentityInput" >
-      <input type="text" id="customIdentity" placeholder="输入你的标签" maxlength="10" >
+    <div class="identity-field" id="identityInput" style="display:block">
+      <input type="text" id="identityField" placeholder="用几个词形容你的大学角色" maxlength="20">
     </div>
 
     <div class="check-row" id="shareCheck">
@@ -336,12 +359,10 @@ textarea.input::placeholder{color:var(--text-light)}
       <label class="signature-radio" data-value="nickname">
         <input type="radio" name="signature" value="nickname"> 昵称
       </label>
-      <label class="signature-radio" data-value="realname">
-        <input type="radio" name="signature" value="realname"> 真实姓名
-      </label>
+
     </div>
     <div class="signature-input" id="signatureInput">
-      <input type="text" id="signatureValue" placeholder="输入你的昵称或姓名" maxlength="20">
+      <input type="text" id="signatureValue" placeholder="输入你的昵称" maxlength="20">
     </div>
 
     <button class="btn btn-primary" id="generateBtn" disabled>生成回忆</button>
@@ -359,10 +380,9 @@ textarea.input::placeholder{color:var(--text-light)}
     <!-- Memory Card -->
     <div class="card" id="memoryCard">
       <div class="card-title">你的毕业回忆</div>
-      <div class="memory-text" id="memoryText"></div>
       <div class="quote-block" id="quoteBlock"></div>
+      <div class="memory-text" id="memoryText"></div>
       <div class="roast-text" id="roastText"></div>
-      <div class="keyword-tag-wrapper" id="keywordWrapper"></div>
     </div>
 
     <!-- Resonance Section -->
@@ -372,6 +392,7 @@ textarea.input::placeholder{color:var(--text-light)}
       <div class="resonance-card" id="resonanceInner">
         <div class="resonance-badge" id="resonanceBadge"></div>
         <div class="resonance-content" id="resonanceContent"></div>
+        <div class="resonance-graph" id="resonanceGraph"></div>
         <div class="resonance-meta" id="resonanceMeta"></div>
       </div>
     </div>
@@ -381,6 +402,27 @@ textarea.input::placeholder{color:var(--text-light)}
   <div class="footer">
     <div class="stat" id="statDisplay"></div>
     <div>毕业回响 · 2026</div>
+  </div>
+</div>
+
+
+<!-- Privacy Modal -->
+<div class="privacy-overlay" id="privacyOverlay">
+  <div class="privacy-modal">
+    <h2>隐私说明与免责声明</h2>
+    <p class="subtitle">毕业回响 · 非商业毕业纪念项目</p>
+    <ul class="privacy-list">
+      <li><strong>1.</strong> 未勾选分享：你的输入内容与生成结果完全留存于本地设备，不会上传至任何服务器。</li>
+      <li><strong>2.</strong> 勾选分享后：数据将存储于云端。项目创建者在技术层面可访问存储数据，但承诺不主动查看，并于毕业典礼后一周内彻底清空全部数据，不保留、不导出、不另作他用。</li>
+      <li><strong>3.</strong> 其他用户不会直接看到你的原始输入，共鸣匹配仅展示AI生成的概括性语句。</li>
+      <li><strong>4.</strong> 署名由你自行选择，默认匿名。如选择真实姓名，该姓名将随匹配结果对他人可见，请自行评估。</li>
+      <li><strong>5.</strong> 请勿在输入内容中填写个人身份信息（姓名、学号、联系方式等）。本系统无自动过滤机制，主动提交并分享的信息将被存储。</li>
+      <li><strong>6.</strong> AI平台（DeepSeek）声明API调用数据不用于模型训练。</li>
+      <li><strong>7.</strong> 链接可被转发，请在分享时自行把握传播范围。</li>
+      <li><strong>8.</strong> 免责范围：本工具为非商业毕业纪念项目。创建者不对以下情形承担责任：使用者主动透露个人信息；选择非匿名署名后被识别；链接被转发至预期范围之外；AI生成内容引发的主观感受；以及第三方平台（Vercel、DeepSeek等）的潜在安全事件。</li>
+      <li><strong>9.</strong> 使用即视为已阅读并同意上述全部条款。如不同意，请勿使用。参与后如需删除个人数据，可随时联系创建者。</li>
+    </ul>
+    <button class="privacy-agree" id="privacyAgree">已阅读并同意</button>
   </div>
 </div>
 
@@ -400,9 +442,7 @@ const state = {
 const $ = id => document.getElementById(id);
 const sentenceInput = $('sentenceInput');
 const charCount = $('charCount');
-const identityGrid = $('identityGrid');
-const customIdentityInput = $('customIdentityInput');
-const customIdentity = $('customIdentity');
+const identityField = $('identityField');
 const shareToggle = $('shareToggle');
 const signatureOptions = $('signatureOptions');
 const sigRadios = signatureOptions.querySelectorAll('.signature-radio');
@@ -415,7 +455,6 @@ const resultSection = $('resultSection');
 const memoryText = $('memoryText');
 const quoteBlock = $('quoteBlock');
 const roastText = $('roastText');
-const keywordWrapper = $('keywordWrapper');
 const resonanceDivider = $('resonanceDivider');
 const resonanceInner = $('resonanceInner');
 const resonanceBadge = $('resonanceBadge');
@@ -431,33 +470,18 @@ sentenceInput.addEventListener('input', () => {
   state.sentence = sentenceInput.value;
 });
 
-// ===== Identity selector =====
-identityGrid.addEventListener('click', e => {
-  const chip = e.target.closest('.identity-chip');
-  if (!chip) return;
-  identityGrid.querySelectorAll('.identity-chip').forEach(c => c.classList.remove('selected'));
-  chip.classList.add('selected');
-  if (chip.dataset.value === '__custom__') {
-    customIdentityInput.classList.add('visible');
-    customIdentity.focus();
-    state.identity = customIdentity.value;
-  } else {
-    customIdentityInput.classList.remove('visible');
-    state.identity = chip.dataset.value;
-  }
-});
-
-
-// ===== Custom identity =====
-customIdentity.addEventListener('input', () => {
-  state.identity = customIdentity.value;
+// ===== Identity input =====
+identityField.addEventListener('input', () => {
+  state.identity = identityField.value;
 });
 // ===== Share toggle =====
-shareToggle.addEventListener('change', () => {
-  state.shareEnabled = shareToggle.checked;
-  signatureOptions.classList.toggle('visible', shareToggle.checked);
-  if (!shareToggle.checked) {
-    signatureInput.classList.remove('visible');
+shareToggle.addEventListener('change', function() {
+  state.shareEnabled = this.checked;
+  if (this.checked) {
+    document.getElementById('signatureOptions').style.display = 'flex';
+  } else {
+    document.getElementById('signatureOptions').style.display = 'none';
+    document.getElementById('signatureInput').style.display = 'none';
   }
 });
 
@@ -468,8 +492,8 @@ sigRadios.forEach(radio => {
     radio.classList.add('selected');
     const val = radio.dataset.value;
     state.signatureType = val;
-    signatureInput.classList.toggle('visible', val === 'nickname' || val === 'realname');
-    signatureValue.value = '';
+    document.getElementById('signatureInput').style.display = val === 'nickname' ? 'block' : 'none';
+    document.getElementById('signatureValue').value = '';
     state.signatureValue = '';
   });
 });
@@ -522,7 +546,10 @@ async function generate() {
 
     // Step 2: Store if shared
     if (state.shareEnabled) {
-      storeMemory(chatData).catch(() => {});
+      const storeResp = await storeMemory(chatData);
+      if (storeResp && storeResp.total) {
+        statDisplay.textContent = '已有 ' + storeResp.total + ' 人在这里留下回忆';
+      }
     }
 
     // Step 3: Resonance match (always)
@@ -539,21 +566,21 @@ async function generate() {
 
 // ===== Display memory =====
 function displayMemory(data) {
-  memoryText.textContent = data.memory;
-
+  // 第一段：金句（原著/电影/歌词等）
   quoteBlock.textContent = data.quote || '';
   quoteBlock.style.display = data.quote ? 'block' : 'none';
 
+  // 第二段：回应
+  memoryText.textContent = data.memory || '';
+
   roastText.textContent = data.roast ? '\u2728 ' + data.roast : '';
   roastText.style.display = data.roast ? 'block' : 'none';
-
-  keywordWrapper.innerHTML = '<span class="keyword-tag">\uD83C\uDFF7\uFE0F ' + data.keyword + '</span>';
 }
 
 // ===== Store memory =====
 async function storeMemory(data) {
   try {
-    await fetch('/api/store', {
+    const resp = await fetch('/api/store', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -562,12 +589,18 @@ async function storeMemory(data) {
         memory: data.memory,
         quote: data.quote,
         roast: data.roast,
-        keyword: data.keyword,
+        keywords: data.keywords,
         signature_type: state.signatureType,
         signature_value: state.signatureType === 'anonymous' ? '' : state.signatureValue
       })
     });
-  } catch {}
+    if (resp.ok) {
+      return await resp.json();
+    }
+  } catch (e) {
+    console.error('store error:', e);
+  }
+  return null;
 }
 
 // ===== Find resonance =====
@@ -577,7 +610,7 @@ async function findResonance(data) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        keyword: data.keyword,
+        keywords: data.keywords,
         memory: data.memory,
         sentence: state.sentence,
         identity: state.identity
@@ -600,8 +633,8 @@ function displayResonance(data) {
   switch (data.type) {
     case 'resonance':
       resonanceInner.classList.add('resonance');
-      badgeText = '\u2728 \u8FDC\u60A0\u7684\u76F8\u4F3C\u6027';
-      badgeIcon = '\uD83D\uDD2A';
+      badgeText = '\u2728 \u9065\u8FDC\u7684\u76F8\u4F3C\u6027';
+      badgeIcon = '\uD83D\uDCAB';
       break;
     case 'group':
       resonanceInner.classList.add('group');
@@ -616,19 +649,19 @@ function displayResonance(data) {
 
   resonanceBadge.textContent = badgeIcon + ' ' + badgeText;
   resonanceContent.textContent = data.content;
+  try { renderResonanceGraph(data.currentKeywords || [], data.people || []); } catch (e) { console.error('graph error:', e); }
 
-  let metaParts = [];
+    let metaParts = [];
   if (data.matchCount > 0) {
-    metaParts.push('\u76F8\u4F3C\u56DE\u5FC6 ' + data.matchCount + ' \u7BC7');
+    metaParts.push('\u2764\uFE0F ' + data.matchCount + ' \u4EBA\u4E0E\u4F60\u4EA7\u751F\u5171\u9E23');
   }
   if (data.totalCount) {
     metaParts.push('\u5171 ' + data.totalCount + ' \u4EBA\u7559\u4E0B\u56DE\u5FC6');
   }
-  if (data.matchedSentence) {
-    metaParts.push('\u300C' + data.matchedSentence + '\u300D');
+  if (data.matchCount > 0) {
+    metaParts.push('\u5728\u5E7F\u88A4\u7684\u5B87\u5B99\u4E4B\u4E2D\uFF0C\u6709\u4E24\u9897\u661F\u661F\u5F7C\u6B64\u7167\u89C1');
   }
   resonanceMeta.textContent = metaParts.join(' \u00B7 ');
-
   resonanceDivider.style.display = 'block';
 
   setTimeout(() => {
@@ -636,8 +669,63 @@ function displayResonance(data) {
   }, 500);
 }
 
+// ===== Resonance graph visualization =====
+function renderResonanceGraph(currentKeywords, people) {
+  const container = document.getElementById('resonanceGraph');
+  if (!people || people.length === 0) { container.innerHTML = ''; return; }
+
+  const w = Math.min(container.offsetWidth || 400, 440);
+  const h = 240;
+  const cx = w / 2;
+  const cy = 110;
+  const maxPeople = Math.min(people.length, 5);
+  const radius = Math.min(w * 0.3, 100);
+  // Single person goes to the right; multiple spread in an arc
+  const startAngle = maxPeople === 1 ? 0 : -Math.PI * 0.4;
+  const angleSpan = Math.PI * 0.8;
+  const angleStep = maxPeople > 1 ? angleSpan / (maxPeople - 1) : 0;
+
+  let svg = '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
+
+  for (let i = 0; i < maxPeople; i++) {
+    const angle = startAngle + i * angleStep;
+    const px = cx + Math.cos(angle) * radius;
+    const py = cy + Math.sin(angle) * radius;
+
+    // Connection line
+    svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + px + '" y2="' + py + '" stroke="#C8A56D" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.5"/>';
+
+    // Keyword hint on the line
+    const shared = (currentKeywords || []).filter(kw => (people[i].keywords || []).indexOf(kw) >= 0);
+    if (shared.length > 0) {
+      const mx = (cx + px) / 2;
+      const my = (cy + py) / 2 - 10;
+      svg += '<text x="' + mx + '" y="' + my + '" text-anchor="middle" font-size="10" fill="#A8854D">' + shared.join('/') + '</text>';
+    }
+
+    // People node
+    const label = people[i].signature || '匿名';
+    const textW = Math.min(label.length * 7 + 10, 60);
+    svg += '<rect x="' + (px - textW/2) + '" y="' + (py - 10) + '" width="' + textW + '" height="20" rx="10" fill="#FFFFFF" stroke="#C8A56D" stroke-width="1.5" opacity="1"/>';
+    svg += '<text x="' + px + '" y="' + (py + 4) + '" text-anchor="middle" font-size="11" fill="#2C1810" font-weight="600">' + label + '</text>';
+  }
+
+  // Center: current user
+  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="22" fill="#C8A56D" opacity="1"/>';
+  svg += '<text x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="14" fill="#FFFFFF" font-weight="bold">你</text>';
+
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+// ===== Init =====// ===== Privacy modal =====
+document.getElementById('privacyAgree').addEventListener('click', function() {
+  document.getElementById('privacyOverlay').style.display = 'none';
+  document.body.classList.remove('modal-open');
+});
+
 // ===== Init =====
 (async function init() {
+  document.body.classList.add('modal-open');
   try {
     const resp = await fetch('/api/store');
     if (resp.ok) {

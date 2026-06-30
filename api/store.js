@@ -15,27 +15,31 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: '仅支持 POST 请求' });
   }
 
-  const { sentence, identity, memory, quote, roast, keyword, signature_type, signature_value } = req.body;
+  const { sentence, identity, memory, quote, roast, keywords, signature_type, signature_value } = req.body;
 
-  if (!sentence || !memory || !keyword) {
+  if (!sentence || !memory || !keywords) {
     return res.status(400).json({ error: '缺少必要字段' });
   }
 
   try {
+    const kwList = Array.isArray(keywords) ? keywords.slice(0, 5) : ['青春'];
     const entry = {
       sentence,
       identity: identity || '',
       memory,
       quote: quote || '',
       roast: roast || '',
-      keyword,
+      keywords: kwList,
       signature_type: signature_type || 'anonymous',
       signature_value: signature_value || '',
       created_at: Date.now()
     };
 
-    const key = `keyword:${keyword}`;
-    await kv.lpush(key, JSON.stringify(entry));
+    for (const kw of kwList) {
+      if (kw && kw.trim()) {
+        await kv.lpush(`keyword:${kw.trim()}`, JSON.stringify(entry));
+      }
+    }
     await kv.incr('stats:total');
     const total = await kv.get('stats:total');
 

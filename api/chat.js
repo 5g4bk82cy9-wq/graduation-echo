@@ -36,26 +36,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const identityText = identity ? `\n隐藏身份：${identity}` : '';
-    const systemPrompt = `你是一位大学记忆作家，擅长用细腻温暖的文字捕捉校园生活的闪光瞬间。
+    const identityText = identity ? `\nta形容自己是「${identity}」。` : '';
+        const systemPrompt = `用户发来一段关于大学四年的自画像。你的任务是理解ta这句话背后的情绪核心，然后：
 
-根据用户输入的一句话自画像，为ta写一段200-300字的第二人称回忆。
+1. 先找一句真实存在的金句作为开场，可以是原著段落、电影台词、歌词等，必须真实存在，用「」引号括起来并标注出处。
+2. 然后用第二人称写一段回应（100-180字），稳稳接住ta的感受。语气可以是朋友共情、长者宽慰、行人见证等不同角度，自然不生硬，像是一个真实的人在说话。
 
-要求：
-1. 基于自画像合理扩充，不虚构具体细节
-2. 结尾附带一句善意的吐槽，让回忆温暖但不煽情
-3. 引用一句真实存在的古今中外金句（诗词/歌词/台词均可），标注出处
-4. 输出一个5字以内的"共鸣关键词"，概括这段回忆的核心情绪
+再加一句善意的吐槽，温暖不煽情。
+为系统生成若干个索引关键词（内部使用，不展示给用户），用于匹配有相似感受的人。每15字生成1个，最多5个。每个不超过5个字。
 
-请严格以 JSON 格式输出：
+请严格以 JSON 格式输出，不要输出任何其他内容：
 {
-  "memory": "（200-300字的第二人称回忆正文）",
   "quote": "「金句原文」——出处",
+  "memory": "（第二人称回应，100-180字）",
   "roast": "（一句善意的吐槽）",
-  "keyword": "（5字以内的共鸣关键词）"
+  "keywords": ["关键词1", "关键词2"]
 }`;
 
-    const userPrompt = `用户的自画像：${sentence}${identityText}`;
+    const userPrompt = `ta说：${sentence}${identityText}`;
 
     const raw = await callDeepSeek([
       { role: 'system', content: systemPrompt },
@@ -75,7 +73,12 @@ export default async function handler(req, res) {
       memory: result.memory || '',
       quote: result.quote || '',
       roast: result.roast || '',
-      keyword: (result.keyword || '青春').trim().slice(0, 5)
+      keywords: (() => {
+        let kw = Array.isArray(result.keywords) ? result.keywords : ['青春'];
+        const maxKw = Math.min(Math.max(Math.ceil((sentence || '').length / 15), 1), 5);
+        kw = kw.slice(0, maxKw).map(k => (k || '').trim().slice(0, 5)).filter(Boolean);
+        return kw.length > 0 ? kw : ['青春'];
+      })()
     });
   } catch (err) {
     console.error('chat error:', err);
